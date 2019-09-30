@@ -4,6 +4,4 @@ def calc(s):
     #print('nums=', nums)
     return sum(nums)
 
-print(calc("1"))
 print(calc("1+2"))
-print(calc("1+2+3"))
