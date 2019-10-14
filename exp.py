@@ -11,6 +11,11 @@ class Val(Expr):
         def eval(self):
             return self.value
 
+class Binary(Expr):
+        def __repr__(self):
+            classname = self.__class__.__name__
+            return f'{classname}({self.left},{self.right})'
+
 v = Val(1)
 print(v)
 assert v.eval() == 1
