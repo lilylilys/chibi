@@ -25,7 +25,7 @@ def parse(s: str):
     else:
         s1 = s[0:pos]
         s2= s[pos+1:]
-        return Add(Val(int(s1)), Val(int(s2)))   
+        return Add(parse(s1), parse(s2))   
 
-e = parse("123+456")
-print(e)
+e = parse("1+2+3")
+print(e,e.eval())
