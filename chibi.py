@@ -18,7 +18,7 @@ class Expr(object):
         return Val(v)
 
 class Val(Expr):
-    __slot__ = ['value']
+    __slots__ = ['value']
     def __init__(self, value):
         self.value = value
     def __repr__(self):
@@ -29,7 +29,7 @@ e = Val(0)
 assert e.eval({}) == 0
 
 class Binary(Expr):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def __init__(self, left, right):
         self.left = Expr.new(left)
         self.right = Expr.new(right)
@@ -38,26 +38,26 @@ class Binary(Expr):
         return f'{classname}({self.left},{self.right})'
 
 class Add(Binary):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def eval(self, env: dict):
         return self.left.eval(env) + self.right.eval(env)
 
 class Sub(Binary):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def eval(self, env: dict):
         return self.left.eval(env) - self.right.eval(env)
 
 class Mul(Binary):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def eval(self, env: dict):
         return self.left.eval(env) * self.right.eval(env)
 class Div(Binary):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def eval(self, env: dict):
         return self.left.eval(env) // self.right.eval(env)
 
 class Mod(Binary):
-    __slot__ = ['left', 'right']
+    __slots__ = ['left', 'right']
     def eval(self, env: dict):
         return self.left.eval(env) % self.right.eval(env)
 
@@ -69,10 +69,27 @@ class Var(Expr):
     def eval(self, env: dict):
         if self.name in env:
             return env[self.name]
-        '''return 0        未定義のとき0にする'''
-        raise NameError(self.name)  '''NameErrorにする'''
+        '''return 0'''        #未定義のとき0にする
+        raise NameError(self.name)  #NameErrorにする
+
+class Assign(Expr):
+    __slots__ = ['name', 'expr']
+    def __init__(self, name, e):
+        self.name = name
+        self.e = Expr.new(e)
+
+    def eval(self, env):
+        env[self.name] = self.e.eval(env)
+        return env[self.name]
 
 print('少しテスト')
+
+env = {}
+e = Assign('x', Val(1))  # x = 1
+print(e.eval(env))  # 1
+e = Assign('x', Add(Var('x'), Val(2)))  # x = x + 2
+print(e.eval(env))  # 3
+
 try:
     e = Var('x')
     print(e.eval({}))
