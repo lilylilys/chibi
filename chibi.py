@@ -61,6 +61,29 @@ class Mod(Binary):
     def eval(self, env: dict):
         return self.left.eval(env) % self.right.eval(env)
 
+class Var(Expr):
+    __slots__ = ['name']
+
+    def __init__(self, name):
+            self.name = name
+    def eval(self, env: dict):
+        if self.name in env:
+            return env[self.name]
+        '''return 0        未定義のとき0にする'''
+        raise NameError(self.name)  '''NameErrorにする'''
+
+print('少しテスト')
+try:
+    e = Var('x')
+    print(e.eval({}))
+except NameError:
+    print('未定義の変数です')
+
+print('テスト終わり')
+
+
+
+
 def conv(tree):
     if tree == 'Block':
         return conv(tree[0])
