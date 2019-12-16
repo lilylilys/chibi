@@ -68,14 +68,17 @@ class Lte(Binary): # left != right
     __slots__ = ['left', 'right']
     def eval(self, env: dict):   # cond ? x : y
         return 1 if self.left.eval(env) <= self.right.eval(env) else 0
+
 class Gt(Binary): # left != right
     __slots__ = ['left', 'right']
     def eval(self, env: dict):   # cond ? x : y
         return 1 if self.left.eval(env) > self.right.eval(env) else 0
+
 class Gte(Binary): # left != right
     __slots__ = ['left', 'right']
     def eval(self, env: dict):   # cond ? x : y
         return 1 if self.left.eval(env) >= self.right.eval(env) else 0
+
 class Var(Expr):
     __slots__ = ['name']
     def __init__(self, name):
@@ -84,6 +87,7 @@ class Var(Expr):
         if self.name in env:
             return env[self.name]
         raise NameError(self.name)
+
 class Assign(Expr):
     __slots__ = ['name', 'e']
     def __init__(self, name, e):
@@ -119,6 +123,42 @@ class If(Expr):
             return self.then.eval(env)
         else:
             return self.else_.eval(env)
+
+class Lambda(Expr):
+    __slots__ = ['name', 'body', ]
+    def __init__(self, name, body):
+        self.name = name
+        self.body = body
+
+    def repr(self):
+        return f'λ{self.name} . {repr(self.body)}'
+        
+    def eval(self, env):
+        pass
+
+f = Lambda('x', Add(Var('x'), 1))  # λx . x+1
+print(repr(f))
+
+
+class FuncApp(Expr):
+    __slots__ = ['func', 'param']
+    def __init__(self, func: Lambda, param):
+        self.func = func
+        self.param = Expr.new(param)
+    def __repr__(self):
+        return f'({repr(self.func)}) ({repr(self.param)})'
+
+    def eval(self, env):
+        v = self.param.eval(env)    # パラメータを先に評価する
+        name = self.func.name       # Lambda の変数名をとる
+        env = copy(env)             # 環境をコピーすることでローカルスコープを作る
+        env[name] = v               # 環境から引数を渡す
+        return self.func.body.eval(env)
+
+e = FuncApp(f, Add(1,1))   ## (λx . x+1) (1+1)
+                           ## f(x) = x + 1  f(1+1) と同じ
+print(e, '=>', e.eval({}))                           
+
 def conv(tree):
     if tree == 'Block':
         return conv(tree[0])
