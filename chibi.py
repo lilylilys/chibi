@@ -125,20 +125,20 @@ class If(Expr):
             return self.else_.eval(env)
 
 class Lambda(Expr):
-    __slots__ = ['name', 'body', ]
+    __slots__ = ['name', 'body']
     def __init__(self, name, body):
         self.name = name
         self.body = body
-
-    def repr(self):
-        return f'λ{self.name} . {repr(self.body)}'
-        
+    def __repr__(self):
+        return f'λ{self.name} . {str(self.body)}'
     def eval(self, env):
-        pass
+        return self
 
-f = Lambda('x', Add(Var('x'), 1))  # λx . x+1
-print(repr(f))
-
+def copy(env): #環境をコピーすることでローカルスコープを作る
+    newenv = {}
+    for x in env.keys():
+        newenv[x] = env[x]
+    return env
 
 class FuncApp(Expr):
     __slots__ = ['func', 'param']
@@ -149,19 +149,20 @@ class FuncApp(Expr):
         return f'({repr(self.func)}) ({repr(self.param)})'
 
     def eval(self, env):
-        v = self.param.eval(env)    # パラメータを先に評価する
-        name = self.func.name       # Lambda の変数名をとる
-        env = copy(env)             # 環境をコピーすることでローカルスコープを作る
-        env[name] = v               # 環境から引数を渡す
-        return self.func.body.eval(env)
-
-e = FuncApp(f, Add(1,1))   ## (λx . x+1) (1+1)
-                           ## f(x) = x + 1  f(1+1) と同じ
-print(e, '=>', e.eval({}))                           
+        f = self.func.eval(env)
+        v = self.param.eval(env)  # パラメータを先に評価する
+        name = f.name # Lambda の変数名をとる
+        env = copy(env)  # 環境をコピーすることでローカルスコープを作る
+        env[name] = v   # 環境から引数を渡す
+        return f.body.eval(env)
 
 def conv(tree):
     if tree == 'Block':
         return conv(tree[0])
+    if tree == 'FuncDecl':
+        return Assign(str(tree[0]), Lambda(str(tree[1]), conv(tree[2])))
+    if tree == 'FuncApp':
+        return FuncApp(conv(tree[0]), conv(tree[1]))       
     if tree == 'If':
         return If(conv(tree[0]), conv(tree[1]), conv(tree[2]))
     if tree == 'While':
