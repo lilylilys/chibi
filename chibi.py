@@ -83,6 +83,8 @@ class Var(Expr):
     __slots__ = ['name']
     def __init__(self, name):
         self.name = name
+    def __repr__(self):
+        return self.name
     def eval(self, env: dict):
         if self.name in env:
             return env[self.name]
@@ -138,7 +140,7 @@ def copy(env): #環境をコピーすることでローカルスコープを作�
     newenv = {}
     for x in env.keys():
         newenv[x] = env[x]
-    return env
+    return newenv
 
 class FuncApp(Expr):
     __slots__ = ['func', 'param']
